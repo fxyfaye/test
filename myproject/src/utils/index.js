@@ -18,7 +18,20 @@ export function formatTime (date) {
   return `${t1} ${t2}`
 }
 
+//函数防抖
+export function debounce(func,delay){
+  var timer = null;
+  return function(){
+    var self = this, args = arguments;
+    timer && clearTimeout(timer);
+    timer = setTimeout(function(){
+      func.apply(self,args)
+    },delay)
+  }
+}
+
 export default {
   formatNumber,
-  formatTime
+  formatTime,
+  debounce
 }

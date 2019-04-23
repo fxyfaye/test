@@ -16,7 +16,7 @@
       <li>
         <p>
           <icon type="info" size="20px" />
-          <span>我的面试</span>
+          <span>客服中心</span>
         </p>
         <span>></span>
       </li>

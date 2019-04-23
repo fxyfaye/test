@@ -4,16 +4,20 @@
    <ul>
      <li>
        <label for="">公司名称</label>
-       <input type="text" placeholder="请输入公司名称">
+       <input type="text" v-model="current.company" placeholder="请输入公司名称">
      </li>
      <li>
        <label for="">公司电话</label>
-       <input type="number" placeholder="请输入面试联系人电话">
+       <input type="number" v-model="current.phone" placeholder="请输入面试联系人电话">
      </li>
      <li>
        <label for="">面试时间</label>
        <picker
           mode="multiSelector"
+          :range="dateRange"
+          :value="info.date"
+          @change="dateChange"
+          @columnchange="columnChange"
           >
           <view class="date">
             {{dateShow}}
@@ -22,44 +26,137 @@
      </li>
      <li>
        <label for="">面试地址</label>
-       <input type="text" disabled placeholder="请选择面试地址" @tap="goSearch">
+       <input type="text" disabled v-model="current.address.address" placeholder="请选择面试地址" @tap="goSearch">
      </li>
    </ul>
    <p>备注信息</p>
-   <textarea type="text" placeholder="备注信息(可选，100个字以内)"></textarea>
-   <button>确认</button>
+   <textarea type="text" v-model="current.description" placeholder="备注信息(可选，100个字以内)"></textarea>
+   <button :class="btnEnable?'':'disabled'" >确认</button> 
   </div>
 </template>
 
 <script>
-
-
+import { mapState, mapActions } from 'vuex'
+const moment = require("moment")
+const range = [
+  [0,1,2,3,4,5,6,7,8,9],
+  [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],
+  ["00分","10分","20分","30分","40分","50分"]
+]
 export default {
   data () {
     return {
-       
+       info:{
+         date:[0,0,0]
+       }
     }
   },
-
-  components: {
+  created(){
+    //如果时间是二十三点之后过滤掉今天
+    if(moment().hour()==23){
+      this.info.date=[1,0,0];
+    }
   },
-
+   computed:{
+    ...mapState({
+      current:state => state.interview.current
+    }),
+    //按钮禁用状态的判断
+    btnEnable(){
+      //判断公司名称是否为空
+      if(!this.current.company){
+        return false
+      }
+      //验证手机号的正则
+      if(!/^1([38]\d|5[0-35-9]|7[3678])\d{8}$/.test(this.current.phone)){
+        return false
+      }
+      //判断公司地址是否为空
+      if(!this.current.address.address){
+        return false
+      }
+      return true
+    },
+    //面试日期的处理操作
+    dateRange(){
+      let dateRange = [...range];
+      //如果是今天过滤掉之前的小时 
+      if(!this.info.date[0]){
+        dateRange[1]=dateRange[1].filter(item=>{
+          return item > moment().hour()
+        })
+      }else{
+        dateRange[1]=range[1]
+      }
+      //给小时加上“时”字
+      dateRange[1]=dateRange[1].map(item=>{
+        return item + '点'
+      })
+      //显示当前日期之后的十天
+      dateRange[0] = dateRange[0].map(item=>{
+        return (
+          moment()
+            .add(item,"days")
+            .date() + '号'
+        )
+      })
+      return dateRange;
+    },
+    //显示的日期
+    dateShow(){
+      return moment()
+        .add(this.info.date[0], "d")
+        .add(this.info.date[1] + 1, "h")
+        .minute(this.info.date[2] * 10)
+        .format("YYYY-MM-DD HH:mm");
+    }
+  },
   methods: {
+    ...mapActions({
+      submit:"submitInterview/submit"
+    }), 
+    //监听多列选择器每列变化
+    columnChange(e){
+      let { column, value } = e.target;
+      let date = [...this.info.date];
+      date[column] = value;
+      this.info.date = date
+    },
     //去搜索地址页面
     goSearch(){
       wx.navigateTo({
         url:'/pages/search/main'
       })
-    }
+    }       
   },
-
-  computed:{
-
-  },
-
-  created () {
-    // let app = getApp()
+  //添加面试
+  async submit(){
+     //判断公司名称是否为空
+      if (!this.current.company) {
+        wx.showToast({
+          title: "请输入公司名称",
+          icon: "none"
+        });
+        return false;
+      }
+      //判断手机号是否符合规范
+      if (
+        !/^1(3|4|5|7|8)\d{9}$/.test(this.current.phone) ||
+        !/^(\(\d{3,4}\)|\d{3,4}-|\s)?\d{7,14}$/.test(this.current.phone)
+      ) {
+        wx.showToast({
+          title: "请输入面试联系人的手机或座机", //提示的内容
+          icon: "none" //图标
+        });
+        return false;
+      }
+      //添加时间戳到表单
+      this.current.start_time = moment(this.dateShow).unix();
+      let data = await this.submitInterview(this.current);
+      console.log("data...", data);
   }
+
+
 }
 </script>
 
