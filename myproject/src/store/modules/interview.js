@@ -1,3 +1,4 @@
+import {addSign} from '@/api/index'
 const state = {
   list:[],
   current: {
@@ -13,13 +14,16 @@ const mutations = {
   }
 }
 const actions = {
-  submit(state, payload){
+  async submit(state, {...payload}){
     //promise判断何时异步请求结束
-    return new Promise((resolve,reject)=>{
-      //没有接口状态下模拟接口请求的事件
-      setTimeout(function(){
-        resolve();
-      },5000)
+    return new Promise(async(resolve,reject)=>{
+      //经纬度
+      payload.latitude = payload.address.location.lat;
+      payload.longitude = payload.address.location.lng;
+      //序列号地址
+      payload.address = JSON.stringify(payload.address);
+      let result = await addSign(payload);
+      resolve(result)
     })
   }
 }

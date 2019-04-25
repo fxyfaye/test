@@ -3,7 +3,9 @@
     "pages/index/main",
     "pages/add/main",
     "pages/my/main",
-    "pages/search/main"
+    "pages/search/main",
+    "pages/list/main",
+    "pages/details/main"
   ],
   "permission": {
     "scope.userLocation": {

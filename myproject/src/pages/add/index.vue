@@ -31,7 +31,7 @@
    </ul>
    <p>备注信息</p>
    <textarea type="text" v-model="current.description" placeholder="备注信息(可选，100个字以内)"></textarea>
-   <button :class="btnEnable?'':'disabled'" >确认</button> 
+   <button :class="btnEnable?'':'disabled'" @click="submit">确认</button> 
   </div>
 </template>
 
@@ -113,7 +113,7 @@ export default {
   },
   methods: {
     ...mapActions({
-      submit:"submitInterview/submit"
+      submitInterview: 'interview/submit'
     }), 
     //监听多列选择器每列变化
     columnChange(e){
@@ -127,11 +127,23 @@ export default {
       wx.navigateTo({
         url:'/pages/search/main'
       })
-    }       
-  },
-  //添加面试
-  async submit(){
-     //判断公司名称是否为空
+    },    
+    //添加面试
+    submit(){
+      console.log(22)
+       wx.request({
+        url:'http://127.0.0.1:3000/sign/add',
+        method:"POST",
+        data:{
+          phone:this.current.phone,
+          company:this.current.company,
+          address:this.current.address.address
+        },
+        success:()=>{
+          wx.navigateTo({ url: '/pages/index/main' });
+        }
+      })
+     /* //判断公司名称是否为空
       if (!this.current.company) {
         wx.showToast({
           title: "请输入公司名称",
@@ -140,22 +152,41 @@ export default {
         return false;
       }
       //判断手机号是否符合规范
-      if (
-        !/^1(3|4|5|7|8)\d{9}$/.test(this.current.phone) ||
-        !/^(\(\d{3,4}\)|\d{3,4}-|\s)?\d{7,14}$/.test(this.current.phone)
-      ) {
+      if (!/^1(3|4|5|7|8)\d{9}$/.test(this.current.phone)) {
         wx.showToast({
-          title: "请输入面试联系人的手机或座机", //提示的内容
+          title: "请输入面试联系人的手机号", //提示的内容
           icon: "none" //图标
         });
         return false;
       }
       //添加时间戳到表单
-      this.current.start_time = moment(this.dateShow).unix();
-      let data = await this.submitInterview(this.current);
-      console.log("data...", data);
-  }
-
+      this.current.start_time = moment(this.dateShow).unix()*1000;
+      //添加form_id
+      this.current.form_id = e.target.formId;
+      let data = await this.submitInterview(this.current); */
+      //处理添加结果
+    /*    if (data.code == 0){
+        wx.showModal({
+          title: '系统提示', //提示的标题,
+          content: data.msg, //提示的内容,
+          showCancel: false,
+          confirmText: '确定', //确定按钮的文字，默认为取消，最多 4 个字符,
+          confirmColor: '#197DBF', //确定按钮的文字颜色,
+          success: res => {
+            if (res.confirm) {
+             wx.navigateTo({ url: '/pages/index/main' });
+            }
+          }
+        });
+      }else{
+        wx.showToast({
+          title: data.msg, //提示的内容,
+          icon: 'fail'//图标,
+        });
+      } */
+     
+  }  
+  },
 
 }
 </script>

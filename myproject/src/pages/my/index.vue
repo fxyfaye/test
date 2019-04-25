@@ -6,7 +6,7 @@
       </p>
     </div>
     <ul>
-      <li>
+      <li @click="goSignList">
         <p>
           <icon type="waiting" size="20px" />
           <span>我的面试</span>
@@ -38,6 +38,11 @@ export default {
 
   created () {
     
+  },
+  methods:{
+    goSignList(){
+      wx.navigateTo({ url: '/pages/list/main' });
+    }
   }
 }
 </script>
